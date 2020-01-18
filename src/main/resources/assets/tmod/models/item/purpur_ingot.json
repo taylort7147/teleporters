@@ -1,0 +1,6 @@
+{
+    "parent":"tmod:item/standard_item",
+    "textures": {
+        "layer0":"tmod:items/purpur_ingot"
+    }
+}

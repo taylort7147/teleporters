@@ -1,5 +1,10 @@
 package com.github.taylort7147.tmod;
 
+import com.github.taylort7147.tmod.init.ModItemGroup;
+import com.github.taylort7147.tmod.item.ItemPurpurIngot;
+import com.github.taylort7147.tmod.item.ItemPurpurPlate;
+import com.github.taylort7147.tmod.item.ItemEnderCircuit;
+import com.github.taylort7147.tmod.item.ItemTeleporterLinkEstablisher;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;                 
 import net.minecraftforge.event.RegistryEvent;
@@ -14,7 +19,10 @@ public final class ModEventSubscriber
     public static void onRegisterItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-            setUp(new Item(new Item.Properties()), "example_item"));
+            setUp(new ItemPurpurIngot(new Item.Properties().group(ModItemGroup.MOD_ITEM_GROUP)), ItemPurpurIngot.NAME),
+            setUp(new ItemPurpurPlate(new Item.Properties().group(ModItemGroup.MOD_ITEM_GROUP)), ItemPurpurPlate.NAME),
+            setUp(new ItemEnderCircuit(new Item.Properties().group(ModItemGroup.MOD_ITEM_GROUP)), ItemEnderCircuit.NAME),
+            setUp(new ItemTeleporterLinkEstablisher(new Item.Properties().group(ModItemGroup.MOD_ITEM_GROUP)), ItemTeleporterLinkEstablisher.NAME));
     }
 
     public static <T extends IForgeRegistryEntry<T>> T 
