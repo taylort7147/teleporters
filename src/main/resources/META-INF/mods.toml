@@ -32,7 +32,7 @@ description='''
 A mod that I haven't decided what to do with yet
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.examplemod]] #optional
+[[dependencies.tmod]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -44,7 +44,7 @@ A mod that I haven't decided what to do with yet
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="BOTH"
 # Here's another dependency
-[[dependencies.examplemod]]
+[[dependencies.tmod]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.15.1]"
