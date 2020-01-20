@@ -1,0 +1,7 @@
+{
+    "variants": 
+    {
+        "activated=true": { "model": "tmod:block/teleporter_activated" },
+        "activated=false": { "model": "tmod:block/teleporter" }
+    }
+}
