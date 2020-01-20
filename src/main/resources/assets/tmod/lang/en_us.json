@@ -1,5 +1,5 @@
 {
-    "tile.tmod.teleporter_block": "Teleporter",
+    "block.tmod.teleporter": "Teleporter",
     "item.tmod.purpur_ingot": "Purpur Ingot",
     "item.tmod.purpur_plate": "Purpur Plate",
     "item.tmod.teleporter_link_establisher": "Link Establisher",
