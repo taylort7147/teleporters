@@ -1,0 +1,10 @@
+{
+    "type": "minecraft:smelting",
+    "group": "tmod",
+    "ingredient": {
+    	"item": "minecraft:popped_chorus_fruit"
+    },
+    "result": {
+        "item": "tmod:purpur_ingot"
+    }
+}

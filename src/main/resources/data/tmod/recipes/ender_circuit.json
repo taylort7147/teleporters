@@ -17,8 +17,7 @@
             "item": "minecraft:ender_eye"
         },
         "C": {
-            "item": "minecraft:dye",
-            "data": 2
+            "item": "minecraft:green_dye"
         }
     },
     "result": {
