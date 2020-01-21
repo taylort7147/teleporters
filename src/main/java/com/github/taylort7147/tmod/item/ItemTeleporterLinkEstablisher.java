@@ -14,4 +14,5 @@ public class ItemTeleporterLinkEstablisher extends Item
     {
         super(properties);
     }
+
 }
