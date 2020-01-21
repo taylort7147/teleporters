@@ -86,10 +86,9 @@ public final class ModEventSubscriber
     @SubscribeEvent
     public static void onRegisterBlocks(RegistryEvent.Register<Block> event)
     {
-        event.getRegistry().registerAll(
-                setUp(new Block(Block.Properties.create(Material.ROCK).hardnessAndResistance(3.0F, 3.0F)),
-                        "example_ore"),
-                setUp(new BlockTeleporter(Block.Properties.create(Material.IRON).hardnessAndResistance(2.0F, 2.0F)),
+        event.getRegistry()
+                .registerAll(setUp(
+                        new BlockTeleporter(Block.Properties.create(Material.IRON).hardnessAndResistance(2.0F, 2.0F)),
                         BlockTeleporter.NAME));
     }
 
