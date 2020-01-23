@@ -3,6 +3,7 @@ package com.github.taylort7147.tmod.teleporter.event;
 import com.github.taylort7147.tmod.TMod;
 import com.github.taylort7147.tmod.block.BlockTeleporter;
 import com.github.taylort7147.tmod.item.ItemTeleporterLinkEstablisher;
+import com.github.taylort7147.tmod.teleporter.Endpoint;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,36 +21,46 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 @EventBusSubscriber(modid = TMod.MODID, bus = EventBusSubscriber.Bus.FORGE)
 public final class PlayerInteractEventHandler
 {
-    private static boolean isTeleportLinkEvent(final PlayerInteractEvent event)
+    private static boolean isUsingTeleporterLinkEstablisher(final PlayerInteractEvent event)
     {
-        final World world = event.getWorld();
-        final BlockPos target = event.getPos();
-        final Block targetBlock = world.getBlockState(target).getBlock();
         final ItemStack itemStackInHand = event.getItemStack();
         final Item itemInHand = (itemStackInHand == null) ? null : itemStackInHand.getItem();
         final Hand hand = event.getHand();
 
-        return (hand == Hand.MAIN_HAND) && (targetBlock instanceof BlockTeleporter)
-                && (itemInHand instanceof ItemTeleporterLinkEstablisher);
+        return (hand == Hand.MAIN_HAND) && (itemInHand instanceof ItemTeleporterLinkEstablisher);
+    }
+
+    private static boolean isTargetingTeleporter(final PlayerInteractEvent event)
+    {
+        final World world = event.getWorld();
+        final BlockPos target = event.getPos();
+        final Block targetBlock = world.getBlockState(target).getBlock();
+        return targetBlock instanceof BlockTeleporter;
     }
 
     @SubscribeEvent
     public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
-        if (isTeleportLinkEvent(event))
+        if(isUsingTeleporterLinkEstablisher(event) && isTargetingTeleporter(event))
         {
-            BlockPos target = event.getPos();
+            World world = event.getWorld();
+            final BlockPos target = event.getPos();
+            PlayerEntity player = event.getPlayer();
+            Endpoint endpoint = new Endpoint(target, world.getDimension().getType().getId());
+            Event forwardEvent = new TeleporterEvent.TeleporterLinkEstablisherUsed(world, player, endpoint);
+            MinecraftForge.EVENT_BUS.post(forwardEvent);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerUse(PlayerInteractEvent.RightClickItem event)
+    {
+        if(isUsingTeleporterLinkEstablisher(event))
+        {
             World world = event.getWorld();
             PlayerEntity player = event.getPlayer();
-            if (player.isCrouching())
-            {
-                Event forwardEvent = new TeleporterLinkEvent.ResetLink(player, world, target);
-                MinecraftForge.EVENT_BUS.post(forwardEvent);
-            } else
-            {
-                Event forwardEvent = new TeleporterLinkEvent.EstablishEndpoint(player, world, target);
-                MinecraftForge.EVENT_BUS.post(forwardEvent);
-            }
+            Event forwardEvent = new TeleporterEvent.TeleporterLinkEstablisherUsed(world, player, null);
+            MinecraftForge.EVENT_BUS.post(forwardEvent);
         }
     }
 }

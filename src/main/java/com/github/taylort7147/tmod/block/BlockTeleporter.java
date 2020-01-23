@@ -1,6 +1,8 @@
 package com.github.taylort7147.tmod.block;
 
 import com.github.taylort7147.tmod.TMod;
+import com.github.taylort7147.tmod.teleporter.Endpoint;
+import com.github.taylort7147.tmod.teleporter.event.TeleporterEvent;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -19,6 +21,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 
 public class BlockTeleporter extends Block
@@ -85,17 +88,22 @@ public class BlockTeleporter extends Block
 
     private void updatePowerState(World world, BlockPos pos, IForgeBlockState state)
     {
-        if (!world.isRemote())
+        if(!world.isRemote())
         {
             boolean isActivated = state.getBlockState().get(ACTIVATED);
             boolean isPowered = world.isBlockPowered(pos);
-            if (isPowered && !isActivated)
+            if(isPowered && !isActivated)
             {
                 // Toggled on - activate
                 System.out.println("Toggle on");
                 world.setBlockState(pos, state.getBlockState().with(ACTIVATED, Boolean.valueOf(true)), 3);
                 world.getPendingBlockTicks().scheduleTick(pos, this, TICKS_BEFORE_ACTIVATION);
-            } else if (!isPowered && isActivated)
+
+                Endpoint origin = new Endpoint(pos, world.getDimension().getType().getId());
+                TeleporterEvent event = new TeleporterEvent.TeleporterActivated(world, origin);
+                MinecraftForge.EVENT_BUS.post(event);
+            }
+            else if(!isPowered && isActivated)
             {
                 // Toggled off - reset
                 System.out.println("Toggle off");

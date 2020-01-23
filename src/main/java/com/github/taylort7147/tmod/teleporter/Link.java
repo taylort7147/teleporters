@@ -1,0 +1,95 @@
+package com.github.taylort7147.tmod.teleporter;
+
+import java.util.UUID;
+
+import com.github.taylort7147.tmod.block.BlockTeleporter;
+
+import net.minecraft.block.Block;
+import net.minecraft.world.World;
+
+public class Link
+{
+    private UUID owner;
+    private Endpoint left;
+    private Endpoint right;
+
+    public Link(UUID owner, Endpoint left, Endpoint right)
+    {
+        this.owner = owner;
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public String toString()
+    {
+        String leftString = (left == null) ? "null" : left.toString();
+        String rightString = (right == null) ? "null" : right.toString();
+        return leftString + " <==> " + rightString;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(!(obj instanceof Link))
+            return false;
+
+        Link other = (Link) obj;
+        return (left.equals(other.left) && right.equals(other.right))
+                || (left.equals(other.right) && right.equals(other.left));
+    }
+
+    public UUID getOwner()
+    {
+        return owner;
+    }
+
+    public Endpoint getLeft()
+    {
+        return left;
+    }
+
+    public Endpoint getRight()
+    {
+        return right;
+    }
+
+    public boolean isValid()
+    {
+        return left != null && right != null && !left.equals(right) && left.getDimension() == right.getDimension();
+    }
+
+    public boolean isValidLinkInWorld(World world)
+    {
+        if(!isValid())
+            return false;
+
+        final Block leftBlock = world.getBlockState(left.getPos()).getBlock();
+        final Block rightBlock = world.getBlockState(right.getPos()).getBlock();
+        final int dimension = world.getDimension().getType().getId();
+
+        return (left.getDimension() == dimension) && (right.getDimension() == dimension)
+                && (leftBlock instanceof BlockTeleporter) && (rightBlock instanceof BlockTeleporter);
+    }
+
+    public boolean contains(Endpoint endpoint)
+    {
+        return (left != null && left.equals(endpoint)) || (right != null && right.equals(endpoint));
+    }
+
+    public Endpoint getOther(Endpoint endpoint)
+    {
+        if(left.equals(endpoint))
+        {
+            return right;
+        }
+        else if(right.equals(endpoint))
+        {
+            return left;
+        }
+        else
+        {
+            throw new IndexOutOfBoundsException("The link does not contain the object " + endpoint.toString());
+        }
+    }
+}
