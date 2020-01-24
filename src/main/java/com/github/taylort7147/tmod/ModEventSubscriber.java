@@ -9,6 +9,8 @@ import com.github.taylort7147.tmod.item.ItemEnderCircuit;
 import com.github.taylort7147.tmod.item.ItemPurpurIngot;
 import com.github.taylort7147.tmod.item.ItemPurpurPlate;
 import com.github.taylort7147.tmod.item.ItemTeleporterLinkEstablisher;
+import com.github.taylort7147.tmod.teleporter.capability.ModCapabilities;
+import com.github.taylort7147.tmod.teleporter.capability.TeleporterLinkDataProvider;
 import com.github.taylort7147.tmod.tileentity.TeleporterTileEntity;
 import com.google.common.base.Preconditions;
 
@@ -18,9 +20,12 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -133,5 +138,18 @@ public final class ModEventSubscriber
     {
         entry.setRegistryName(registryName);
         return entry;
+    }
+
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent event)
+    {
+        TMod.LOGGER.info("onCommonSetup");
+        ModCapabilities.registerCapabilities();
+    }
+
+    @SubscribeEvent
+    public static void onAttachWorldCapabilities(AttachCapabilitiesEvent<World> event)
+    {
+        event.addCapability(new ResourceLocation(TMod.MODID, "teleporter_data"), new TeleporterLinkDataProvider());
     }
 }

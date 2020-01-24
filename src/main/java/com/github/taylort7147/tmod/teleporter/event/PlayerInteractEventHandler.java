@@ -41,8 +41,10 @@ public final class PlayerInteractEventHandler
     @SubscribeEvent
     public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
+        TMod.LOGGER.debug("onPlayerRightClickBlock");
         if(isUsingTeleporterLinkEstablisher(event) && isTargetingTeleporter(event))
         {
+            TMod.LOGGER.debug("onPlayerRightClickBlock (using teleporter link establisher and targeting teleporter)");
             World world = event.getWorld();
             final BlockPos target = event.getPos();
             PlayerEntity player = event.getPlayer();
@@ -55,8 +57,10 @@ public final class PlayerInteractEventHandler
     @SubscribeEvent
     public static void onPlayerUse(PlayerInteractEvent.RightClickItem event)
     {
+        TMod.LOGGER.debug("onPlayerUse");
         if(isUsingTeleporterLinkEstablisher(event))
         {
+            TMod.LOGGER.debug("onPlayerUse (using teleporter link establisher");
             World world = event.getWorld();
             PlayerEntity player = event.getPlayer();
             Event forwardEvent = new TeleporterEvent.TeleporterLinkEstablisherUsed(world, player, null);

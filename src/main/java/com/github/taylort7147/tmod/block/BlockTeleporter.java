@@ -62,6 +62,12 @@ public class BlockTeleporter extends Block
     }
 
     @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    {
+        return VoxelShapes.create(BOUNDING_BOX);
+    }
+
+    @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
     {
         return VoxelShapes.create(BOUNDING_BOX);
