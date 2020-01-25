@@ -5,14 +5,30 @@ import java.util.UUID;
 import com.github.taylort7147.tmod.block.BlockTeleporter;
 
 import net.minecraft.block.Block;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.INBTSerializable;
 
-public class Link
+public class Link implements INBTSerializable<CompoundNBT>
 {
     private UUID owner;
     private Endpoint left;
     private Endpoint right;
 
+    private Link()
+    {
+        this.owner = null;
+        this.left = null;
+        this.right = null;
+    }
+    
+    public static Link fromNbt(CompoundNBT nbt)
+    {
+        Link link = new Link();
+        link.deserializeNBT(nbt);
+        return link;
+    }
+    
     public Link(UUID owner, Endpoint left, Endpoint right)
     {
         this.owner = owner;
@@ -91,5 +107,23 @@ public class Link
         {
             throw new IndexOutOfBoundsException("The link does not contain the object " + endpoint.toString());
         }
+    }
+
+    @Override
+    public CompoundNBT serializeNBT()
+    {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putUniqueId("Owner", this.owner);
+        nbt.put("Left", left.serializeNBT());
+        nbt.put("Right", right.serializeNBT());
+        return nbt;
+    }
+
+    @Override
+    public void deserializeNBT(CompoundNBT nbt)
+    {
+        this.owner = nbt.getUniqueId("Owner");
+        this.left = Endpoint.fromNbt(nbt.getCompound("Left"));
+        this.right = Endpoint.fromNbt(nbt.getCompound("Right"));
     }
 }
