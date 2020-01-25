@@ -27,7 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 @EventBusSubscriber(modid = TMod.MODID, bus = EventBusSubscriber.Bus.FORGE)
-public final class TeleporterLinkEventHandler
+public final class TeleporterEventHandler
 {
     private static final LinkRequestManager pendingLinkRequests = new LinkRequestManager();
     private static final TeleportRequestManager pendingTeleportRequests = new TeleportRequestManager();
@@ -304,6 +304,12 @@ public final class TeleporterLinkEventHandler
                         {
                             player.sendMessage(
                                     new StringTextComponent("You are already establishing a link with this endpoint"));
+                            event.setCanceled(true);
+                        } else if (pendingRequestForPlayer.getEndpoint().getDimension() != event.getWorld()
+                                .getDimension().getType().getId())
+                        {
+                            player.sendMessage(
+                                    new StringTextComponent("You have a pending link request in another dimension."));
                             event.setCanceled(true);
                         } else
                         {

@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import com.github.taylort7147.tmod.teleporter.event.TeleporterLinkEventHandler;
+import com.github.taylort7147.tmod.teleporter.event.TeleporterEventHandler;
 
 public class TeleporterLinkManager implements ITeleporterLinkManager
 {
