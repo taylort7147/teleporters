@@ -6,10 +6,19 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class TeleporterLinkManager
-{
-    private List<Link> links;
+import com.github.taylort7147.tmod.teleporter.event.TeleporterLinkEventHandler;
 
+public class TeleporterLinkManager implements ITeleporterLinkManager
+{
+    private static final TeleporterLinkManager instance = new TeleporterLinkManager();
+    
+    public static TeleporterLinkManager getInstance()
+    {
+        return instance;
+    }
+    
+    private List<Link> links;
+    
     public TeleporterLinkManager()
     {
         this.links = new ArrayList<Link>();
@@ -24,6 +33,18 @@ public class TeleporterLinkManager
         }
     }
 
+    public void setLinks(List<Link> links)
+    {
+        this.links = new ArrayList<Link>(links);
+    }
+
+    @Override
+    public List<Link> getLinks()
+    {
+        return new ArrayList<Link>(this.links);
+    }
+
+    @Override
     public void register(Link link)
     {
         if(links.contains(link))
@@ -32,7 +53,8 @@ public class TeleporterLinkManager
         }
         links.add(link);
     }
-    
+
+    @Override
     public void unregister(Link link)
     {
         if(!links.remove(link))
@@ -41,35 +63,22 @@ public class TeleporterLinkManager
         }
     }
 
-    @Nullable
-    public Link getEstablishedLink(Endpoint endpoint)
-    {
-        Optional<Link> link = links.stream().filter(e -> e.contains(endpoint)).findFirst();
-        return link.orElse(null);
-    }
-
+    @Override
     public boolean isEndpointPartOfLink(Endpoint endpoint)
     {
         return links.stream().anyMatch(link -> link.contains(endpoint));
     }
 
-    public List<Link> getLinks()
-    {
-        ArrayList<Link> links = new ArrayList<Link>(this.links);
-        return links;
-    }
-
-    public void setLinks(List<Link> links)
-    {
-        this.links = new ArrayList<Link>(links);
-    }
-
+    @Override
+    @Nullable
     public Link getLink(Endpoint endpoint)
     {
         Optional<Link> foundLink = links.stream().filter(link -> link.contains(endpoint)).findFirst();
         return foundLink.orElse(null);
     }
 
+    @Override
+    @Nullable
     public Endpoint getDestination(Endpoint endpoint)
     {
         Link link = getLink(endpoint);

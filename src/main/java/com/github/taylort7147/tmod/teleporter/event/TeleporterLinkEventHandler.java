@@ -10,8 +10,9 @@ import javax.annotation.Nullable;
 import com.github.taylort7147.tmod.TMod;
 import com.github.taylort7147.tmod.block.BlockTeleporter;
 import com.github.taylort7147.tmod.teleporter.Endpoint;
+import com.github.taylort7147.tmod.teleporter.ITeleporterLinkManager;
 import com.github.taylort7147.tmod.teleporter.Link;
-import com.github.taylort7147.tmod.teleporter.TeleporterLinkManager;
+import com.github.taylort7147.tmod.teleporter.capability.CapabilityTeleporterLinkManager;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -20,30 +21,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-@EventBusSubscriber(modid = TMod.MODID, bus = EventBusSubscriber.Bus.MOD)
-public class TeleporterLinkEventHandler
+@EventBusSubscriber(modid = TMod.MODID, bus = EventBusSubscriber.Bus.FORGE)
+public final class TeleporterLinkEventHandler
 {
-    private TeleporterLinkManager manager;
-    private LinkRequestManager pendingLinkRequests;
-    private TeleportRequestManager pendingTeleportRequests;
-
-    public TeleporterLinkEventHandler(TeleporterLinkManager manager)
-    {
-        this.manager = manager;
-        this.pendingLinkRequests = new LinkRequestManager();
-        this.pendingTeleportRequests = new TeleportRequestManager();
-        MinecraftForge.EVENT_BUS.register(this);
-    }
+    private static final LinkRequestManager pendingLinkRequests = new LinkRequestManager();
+    private static final TeleportRequestManager pendingTeleportRequests = new TeleportRequestManager();
 
     // TODO: Make scheduling more generic, giving a callback to call after the
     // specified number of ticks has elapsed.
     // TODO: Move to separate file
-    private class TeleportRequestManager
+    private static class TeleportRequestManager
     {
         List<TeleportRequest> requests;
 
@@ -59,13 +51,13 @@ public class TeleporterLinkEventHandler
 
         public void tick()
         {
-            if(requests.isEmpty())
+            if (requests.isEmpty())
                 return;
 
             List<TeleportRequest> processedRequests = new ArrayList<TeleportRequest>();
             requests.stream().forEach(r -> {
                 r.tick();
-                if(r.getRemainingTicks() <= 0)
+                if (r.getRemainingTicks() <= 0)
                 {
                     // TODO: Check if player is still in the game
                     // TODO: Check if player is still on the original teleporter
@@ -87,7 +79,7 @@ public class TeleporterLinkEventHandler
     }
 
     // TODO: Move to separate file
-    private class TeleportRequest
+    private static class TeleportRequest
     {
         private PlayerEntity player;
         private Endpoint destination;
@@ -123,7 +115,7 @@ public class TeleporterLinkEventHandler
     }
 
     // TODO: Move to separate file
-    private class LinkRequest
+    private static class LinkRequest
     {
         private UUID owner;
         private Endpoint endpoint;
@@ -147,7 +139,7 @@ public class TeleporterLinkEventHandler
         @Override
         public boolean equals(Object obj)
         {
-            if(!(obj instanceof LinkRequest))
+            if (!(obj instanceof LinkRequest))
                 return false;
 
             LinkRequest other = (LinkRequest) obj;
@@ -156,7 +148,7 @@ public class TeleporterLinkEventHandler
     }
 
     // TODO: Move to separate file
-    private class LinkRequestManager
+    private static class LinkRequestManager
     {
         private List<LinkRequest> requests;
 
@@ -185,13 +177,13 @@ public class TeleporterLinkEventHandler
             LinkRequest existingRequestForPlayer = find(request.getOwner());
             LinkRequest existingRequestForValue = find(request.getEndpoint());
 
-            if(existingRequestForValue != null)
+            if (existingRequestForValue != null)
             {
                 throw new RuntimeException(
                         "An existing request contains this endpoint " + request.getEndpoint().toString());
             }
 
-            if(existingRequestForPlayer != null)
+            if (existingRequestForPlayer != null)
             {
                 throw new RuntimeException(
                         "An existing request exists for this player with UUID " + request.getOwner());
@@ -201,7 +193,7 @@ public class TeleporterLinkEventHandler
 
         public void remove(LinkRequest request)
         {
-            if(!requests.remove(request))
+            if (!requests.remove(request))
             {
                 throw new RuntimeException("The request is not in the list: " + request.toString());
             }
@@ -215,9 +207,9 @@ public class TeleporterLinkEventHandler
      * @param event
      */
     @SubscribeEvent
-    public void onTeleporterLinkEstablisherUsed(TeleporterEvent.TeleporterLinkEstablisherUsed event)
+    public static void onTeleporterLinkEstablisherUsed(TeleporterEvent.TeleporterLinkEstablisherUsed event)
     {
-        if(event.getWorld().isRemote())
+        if (event.getWorld().isRemote())
         {
             return;
         }
@@ -225,115 +217,113 @@ public class TeleporterLinkEventHandler
         TMod.LOGGER.debug("onTeleporterLinkEstablisherUsed called with parameters: " + "player="
                 + event.getPlayer().getName().getString() + ", endpoint=" + event.getEndpoint());
 
-        Endpoint endpoint = event.getEndpoint();
-        PlayerEntity player = event.getPlayer();
-        UUID playerId = player.getUniqueID();
-
-        LinkRequest pendingRequestForPlayer = pendingLinkRequests.find(playerId);
-        boolean isPendingOwn = pendingRequestForPlayer != null;
-        TMod.LOGGER.debug("isPending=" + isPendingOwn);
-
-        // TODO: Reduce nesting
-        if(endpoint == null)
+        LazyOptional<ITeleporterLinkManager> capability = event.getWorld()
+                .getCapability(CapabilityTeleporterLinkManager.INSTANCE);
+        if (!capability.isPresent())
         {
-            if(event.wasCrouching() && isPendingOwn)
-            {
-                pendingLinkRequests.remove(pendingRequestForPlayer);
-                player.sendMessage(new StringTextComponent("Link request cancelled"));
-            }
-            else
-            {
-                event.setCanceled(true);
-            }
+            TMod.LOGGER.debug("CapabilityTeleporterLinkManager is not present");
         }
-        else
-        {
-            LinkRequest pendingRequestForEndpoint = pendingLinkRequests.find(endpoint);
-            boolean isPendingOther = pendingRequestForEndpoint != null && pendingRequestForPlayer == null;
-            TMod.LOGGER.debug("isPendingOther=" + isPendingOther);
+        capability.ifPresent(manager -> {
 
-            if(event.wasCrouching())
+            Endpoint endpoint = event.getEndpoint();
+            PlayerEntity player = event.getPlayer();
+            UUID playerId = player.getUniqueID();
+
+            LinkRequest pendingRequestForPlayer = pendingLinkRequests.find(playerId);
+            boolean isPendingOwn = pendingRequestForPlayer != null;
+            TMod.LOGGER.debug("isPending=" + isPendingOwn);
+
+            // TODO: Reduce nesting
+            if (endpoint == null)
             {
-                TMod.LOGGER.debug("Reset the link");
-
-                Link link = manager.getLink(endpoint);
-                if(link == null)
+                if (event.wasCrouching() && isPendingOwn)
                 {
-                    if(isPendingOwn)
-                    {
-                        pendingLinkRequests.remove(pendingRequestForPlayer);
-                        player.sendMessage(new StringTextComponent("Link request cancelled"));
-                    }
-                    else if(isPendingOther)
-                    {
-                        player.sendMessage(
-                                new StringTextComponent("This link is part of another player's pending request"));
-                        event.setCanceled(true);
-                    }
-                    else
-                    {
-                        player.sendMessage(new StringTextComponent("No link was found for this endpoint"));
-                        event.setCanceled(true);
-                    }
-                }
-                else if(!playerId.equals(link.getOwner()))
+                    pendingLinkRequests.remove(pendingRequestForPlayer);
+                    player.sendMessage(new StringTextComponent("Link request cancelled"));
+                } else
                 {
-                    player.sendMessage(new StringTextComponent("You are not the owner of this link"));
                     event.setCanceled(true);
                 }
-                else
+            } else
+            {
+                LinkRequest pendingRequestForEndpoint = pendingLinkRequests.find(endpoint);
+                boolean isPendingOther = pendingRequestForEndpoint != null && pendingRequestForPlayer == null;
+                TMod.LOGGER.debug("isPendingOther=" + isPendingOther);
+
+                if (event.wasCrouching())
                 {
-                    manager.unregister(link);
-                    player.sendMessage(new StringTextComponent("Link reset"));
+                    TMod.LOGGER.debug("Reset the link");
+
+                    Link link = manager.getLink(endpoint);
+                    if (link == null)
+                    {
+                        if (isPendingOwn)
+                        {
+                            pendingLinkRequests.remove(pendingRequestForPlayer);
+                            player.sendMessage(new StringTextComponent("Link request cancelled"));
+                        } else if (isPendingOther)
+                        {
+                            player.sendMessage(
+                                    new StringTextComponent("This link is part of another player's pending request"));
+                            event.setCanceled(true);
+                        } else
+                        {
+                            player.sendMessage(new StringTextComponent("No link was found for this endpoint"));
+                            event.setCanceled(true);
+                        }
+                    } else if (!playerId.equals(link.getOwner()))
+                    {
+                        player.sendMessage(new StringTextComponent("You are not the owner of this link"));
+                        event.setCanceled(true);
+                    } else
+                    {
+                        manager.unregister(link);
+                        player.sendMessage(new StringTextComponent("Link reset"));
+                    }
+                } else
+                {
+                    TMod.LOGGER.debug("Request endpoint/link");
+
+                    boolean linkExists = manager.isEndpointPartOfLink(endpoint);
+                    TMod.LOGGER.debug("linkExists=" + linkExists);
+
+                    if (linkExists)
+                    {
+                        // Cancel
+                        player.sendMessage(new StringTextComponent("This endpoint is already part of a link"));
+                        event.setCanceled(true);
+                    } else if (isPendingOther)
+                    {
+                        // Cancel
+                        player.sendMessage(new StringTextComponent(
+                                "Another player has a pending link request containing this endpoint"));
+                        event.setCanceled(true);
+                    } else if (isPendingOwn)
+                    {
+                        if (pendingRequestForPlayer.getEndpoint().equals(endpoint))
+                        {
+                            player.sendMessage(
+                                    new StringTextComponent("You are already establishing a link with this endpoint"));
+                            event.setCanceled(true);
+                        } else
+                        {
+                            // New link
+                            Link link = new Link(playerId, pendingRequestForPlayer.getEndpoint(), endpoint);
+                            pendingLinkRequests.remove(pendingRequestForPlayer);
+                            manager.register(link);
+                            player.sendMessage(new StringTextComponent("Link established: " + link.toString()));
+                        }
+                    } else
+                    {
+                        // New pending request
+                        LinkRequest request = new LinkRequest(playerId, endpoint);
+                        pendingLinkRequests.add(request);
+                        player.sendMessage(
+                                new StringTextComponent("New request started with endpoint " + endpoint.toString()));
+                    }
                 }
             }
-            else
-            {
-                TMod.LOGGER.debug("Request endpoint/link");
-
-                boolean linkExists = manager.isEndpointPartOfLink(endpoint);
-                TMod.LOGGER.debug("linkExists=" + linkExists);
-
-                if(linkExists)
-                {
-                    // Cancel
-                    player.sendMessage(new StringTextComponent("This endpoint is already part of a link"));
-                    event.setCanceled(true);
-                }
-                else if(isPendingOther)
-                {
-                    // Cancel
-                    player.sendMessage(new StringTextComponent(
-                            "Another player has a pending link request containing this endpoint"));
-                    event.setCanceled(true);
-                }
-                else if(isPendingOwn)
-                {
-                    if(pendingRequestForPlayer.getEndpoint().equals(endpoint))
-                    {
-                        player.sendMessage(
-                                new StringTextComponent("You are already establishing a link with this endpoint"));
-                        event.setCanceled(true);
-                    }
-                    else
-                    {
-                        // New link
-                        Link link = new Link(playerId, pendingRequestForPlayer.getEndpoint(), endpoint);
-                        pendingLinkRequests.remove(pendingRequestForPlayer);
-                        manager.register(link);
-                        player.sendMessage(new StringTextComponent("Link established: " + link.toString()));
-                    }
-                }
-                else
-                {
-                    // New pending request
-                    LinkRequest request = new LinkRequest(playerId, endpoint);
-                    pendingLinkRequests.add(request);
-                    player.sendMessage(
-                            new StringTextComponent("New request started with endpoint " + endpoint.toString()));
-                }
-            }
-        }
+        });
     }
 
     /**
@@ -343,52 +333,59 @@ public class TeleporterLinkEventHandler
      * @param event
      */
     @SubscribeEvent
-    public void onTeleporterActivated(TeleporterEvent.TeleporterActivated event)
+    public static void onTeleporterActivated(TeleporterEvent.TeleporterActivated event)
     {
         TMod.LOGGER.debug("onTeleporterActivated");
+        LazyOptional<ITeleporterLinkManager> capability = event.getWorld()
+                .getCapability(CapabilityTeleporterLinkManager.INSTANCE);
 
-        final Endpoint origin = event.getOrigin();
-        final Link link = manager.getLink(origin);
-        final World world = event.getWorld();
-        final List<PlayerEntity> players = event.getPlayers();
-
-        // TODO: Reduce nesting
-        if(link == null)
+        if (!capability.isPresent())
         {
-            TMod.LOGGER.debug("Teleporter is not linked");
+            TMod.LOGGER.debug("CapabilityTeleporterLinkManager is not present");
         }
-        else
-        {
-            Endpoint destination = link.getOther(origin);
-            if(destination == null)
-            {
-                TMod.LOGGER.debug("Destination does not exist for link " + link + " from origin " + origin);
-            }
-            else
-            {
-                BlockState destinationBlockState = world.getBlockState(destination.getPos());
-                Block destinationBlock = destinationBlockState.getBlock();
 
-                if(destinationBlock instanceof BlockTeleporter)
+        capability.ifPresent(manager -> {
+
+            final Endpoint origin = event.getOrigin();
+            final Link link = manager.getLink(origin);
+            final World world = event.getWorld();
+            final List<PlayerEntity> players = event.getPlayers();
+
+            // TODO: Reduce nesting
+            if (link == null)
+            {
+                TMod.LOGGER.debug("Teleporter is not linked");
+            } else
+            {
+                Endpoint destination = link.getOther(origin);
+                if (destination == null)
                 {
-                    TMod.LOGGER
-                            .debug("Scheduling teleport request for " + players.size() + " players to " + destination);
-                    players.stream().forEach(player -> {
-                        pendingTeleportRequests.add(new TeleportRequest(player, destination, 10));
-                    });
-                }
-                else
+                    TMod.LOGGER.debug("Destination does not exist for link " + link + " from origin " + origin);
+                } else
                 {
-                    TMod.LOGGER.debug("There is no teleporter at the destination " + destination);
-                    ITextComponent message = new StringTextComponent(
-                            "There is no teleporter at the destination " + destination);
-                    for (PlayerEntity player : players)
+                    BlockState destinationBlockState = world.getBlockState(destination.getPos());
+                    Block destinationBlock = destinationBlockState.getBlock();
+
+                    if (destinationBlock instanceof BlockTeleporter)
                     {
-                        player.sendMessage(message);
+                        TMod.LOGGER.debug(
+                                "Scheduling teleport request for " + players.size() + " players to " + destination);
+                        players.stream().forEach(player -> {
+                            pendingTeleportRequests.add(new TeleportRequest(player, destination, 10));
+                        });
+                    } else
+                    {
+                        TMod.LOGGER.debug("There is no teleporter at the destination " + destination);
+                        ITextComponent message = new StringTextComponent(
+                                "There is no teleporter at the destination " + destination);
+                        for (PlayerEntity player : players)
+                        {
+                            player.sendMessage(message);
+                        }
                     }
                 }
             }
-        }
+        });
     }
 
     /**
@@ -397,7 +394,7 @@ public class TeleporterLinkEventHandler
      * @param event
      */
     @SubscribeEvent
-    public void onServerTick(ServerTickEvent event)
+    public static void onServerTick(ServerTickEvent event)
     {
         pendingTeleportRequests.tick();
     }

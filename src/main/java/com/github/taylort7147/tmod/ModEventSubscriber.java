@@ -9,6 +9,7 @@ import com.github.taylort7147.tmod.item.ItemEnderCircuit;
 import com.github.taylort7147.tmod.item.ItemPurpurIngot;
 import com.github.taylort7147.tmod.item.ItemPurpurPlate;
 import com.github.taylort7147.tmod.item.ItemTeleporterLinkEstablisher;
+import com.github.taylort7147.tmod.teleporter.capability.CapabilityTeleporterLinkManager;
 import com.github.taylort7147.tmod.tileentity.TeleporterTileEntity;
 import com.google.common.base.Preconditions;
 
@@ -21,11 +22,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-@EventBusSubscriber(modid = TMod.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = TMod.MODID, bus = Bus.MOD)
 public final class ModEventSubscriber
 {
 
@@ -37,6 +40,7 @@ public final class ModEventSubscriber
     @SubscribeEvent
     public static void onRegisterItems(RegistryEvent.Register<Item> event)
     {
+        TMod.LOGGER.debug("onRegisterItems");
         IForgeRegistry<Item> registry = event.getRegistry();
         registry.registerAll(
                 setUp(new ItemPurpurIngot(new Item.Properties().group(ModItemGroup.MOD_ITEM_GROUP)),
@@ -86,6 +90,7 @@ public final class ModEventSubscriber
     @SubscribeEvent
     public static void onRegisterBlocks(RegistryEvent.Register<Block> event)
     {
+        TMod.LOGGER.debug("onRegisterBlocks");
         event.getRegistry()
                 .registerAll(setUp(
                         new BlockTeleporter(Block.Properties.create(Material.IRON).hardnessAndResistance(2.0F, 2.0F)),
@@ -100,6 +105,7 @@ public final class ModEventSubscriber
     @SubscribeEvent
     public static void onRegisterTileEntityTypes(@Nonnull final RegistryEvent.Register<TileEntityType<?>> event)
     {
+        TMod.LOGGER.debug("onRegisterTileEntityTypes");
         event.getRegistry().registerAll(
                 // We don't have a datafixer for our TileEntity, so we pass null into build
                 setUp(TileEntityType.Builder.create(TeleporterTileEntity::new, ModBlocks.TELEPORTER).build(null),
@@ -133,5 +139,13 @@ public final class ModEventSubscriber
     {
         entry.setRegistryName(registryName);
         return entry;
+    }
+
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent event)
+    {
+        TMod.LOGGER.debug("onCommonSetup");
+        TMod.LOGGER.info("Registering capabilities");
+        CapabilityTeleporterLinkManager.register();
     }
 }
