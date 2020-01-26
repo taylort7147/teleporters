@@ -1,0 +1,15 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "group": "teleporters",
+    "pattern": [
+        "PPP"
+    ],
+    "key": {
+        "P": {
+            "item": "teleporters:purpur_ingot"
+        }
+    },
+    "result": {
+        "item": "teleporters:purpur_plate"
+    }
+}

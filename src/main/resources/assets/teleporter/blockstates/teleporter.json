@@ -1,0 +1,7 @@
+{
+    "variants": 
+    {
+        "activated=true": { "model": "teleporters:block/teleporter_activated" },
+        "activated=false": { "model": "teleporters:block/teleporter" }
+    }
+}

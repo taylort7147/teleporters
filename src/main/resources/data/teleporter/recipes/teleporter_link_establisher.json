@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "group": "teleporters",
+    "pattern": [
+        "G",
+        "E",
+        "P"
+    ],
+    "key": {
+        "G": {
+            "item": "minecraft:gold_nugget"
+        },
+        "E": {
+            "item": "minecraft:ender_pearl"
+        },
+        "P": {
+            "item": "teleporters:purpur_ingot"
+        }
+    },
+    "result": {
+        "item": "teleporters:teleporter_link_establisher"
+    }
+}

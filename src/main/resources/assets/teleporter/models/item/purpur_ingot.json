@@ -1,0 +1,6 @@
+{
+    "parent":"teleporters:item/standard_item",
+    "textures": {
+        "layer0":"teleporters:items/purpur_ingot"
+    }
+}

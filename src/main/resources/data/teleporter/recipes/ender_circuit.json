@@ -1,0 +1,26 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "group": "teleporters",
+    "pattern": [
+        "RGR",
+        "GEG",
+        "CCC"
+    ],
+    "key": {
+        "R": {
+            "item": "minecraft:redstone"
+        },
+        "G": {
+            "item": "minecraft:gold_ingot"
+        },
+        "E": {
+            "item": "minecraft:ender_eye"
+        },
+        "C": {
+            "item": "minecraft:green_dye"
+        }
+    },
+    "result": {
+        "item": "teleporters:ender_circuit"
+    }
+}
