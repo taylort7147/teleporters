@@ -1,0 +1,22 @@
+{
+    "textures": {
+    	"particle": "teleporters:blocks/side_panel",
+        "side_panel": "teleporters:blocks/side_panel",
+        "teleporter_top_activated": "teleporters:blocks/teleporter_top_activated"
+    },
+    "elements": [
+        {
+            "name": "Base",
+            "from": [ 0.0, 0.0, 0.0 ], 
+            "to": [ 16.0, 2.0, 16.0 ], 
+            "faces": {
+                "north": { "texture": "#side_panel", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+                "east": { "texture": "#side_panel", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+                "south": { "texture": "#side_panel", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+                "west": { "texture": "#side_panel", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+                "up": { "texture": "#teleporter_top_activated", "uv": [ 0.0, 0.0, 16.0, 16.0 ] },
+                "down": { "texture": "#side_panel", "uv": [ 0.0, 0.0, 16.0, 16.0 ] }
+            }
+        }
+    ]
+}

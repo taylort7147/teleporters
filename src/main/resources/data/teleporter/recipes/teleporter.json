@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "group": "teleporters",
+    "pattern": [
+        "P",
+        "C",
+        "P"
+    ],
+    "key": {
+        "P": {
+            "item": "teleporters:purpur_plate"
+        },
+        "C": {
+            "item": "teleporters:ender_circuit"
+        }
+    },
+    "result": {
+        "item": "teleporters:teleporter"
+    }
+}

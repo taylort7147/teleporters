@@ -1,0 +1,10 @@
+{
+    "type": "minecraft:smelting",
+    "group": "teleporters",
+    "ingredient": {
+    	"item": "minecraft:popped_chorus_fruit"
+    },
+    "result": {
+        "item": "teleporters:purpur_ingot"
+    }
+}

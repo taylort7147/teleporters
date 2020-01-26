@@ -12,11 +12,11 @@ issueTrackerURL="http://my.issue.tracker/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
-modId="tmod" #mandatory
+modId="teleporters" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 version="${version}" #mandatory
  # A display name for the mod
-displayName="TMod" #mandatory
+displayName="Teleporters" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification <here>
 updateJSONURL="http://myurl.me/" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
@@ -29,10 +29,10 @@ credits="" #optional
 authors="Taylor" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-A mod that I haven't decided what to do with yet
+A mod that adds teleporters
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.tmod]] #optional
+[[dependencies.teleporters]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -44,7 +44,7 @@ A mod that I haven't decided what to do with yet
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="BOTH"
 # Here's another dependency
-[[dependencies.tmod]]
+[[dependencies.teleporters]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.15.1]"
